@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "3Tea9NgEgC1YEvbawlZVmt6NUZIQ0FZp2OQu1c0tFlE=",
+  "Source": "SmartUptime.Api",
+  "BasePath": "_content/SmartUptime.Api",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}
