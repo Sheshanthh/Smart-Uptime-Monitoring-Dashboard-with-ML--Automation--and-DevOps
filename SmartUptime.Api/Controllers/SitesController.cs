@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using SmartUptime.Api.Models;
 
 namespace SmartUptime.Api.Controllers
 {
@@ -6,31 +8,39 @@ namespace SmartUptime.Api.Controllers
     [Route("api/[controller]")]
     public class SitesController : ControllerBase
     {
-        private static readonly List<Site> Sites = new();
-        private static int _nextId = 1;
+        private readonly SmartUptimeDbContext _db;
+        public SitesController(SmartUptimeDbContext db)
+        {
+            _db = db;
+        }
 
         [HttpGet]
-        public ActionResult<IEnumerable<Site>> GetAll() => Ok(Sites);
+        public async Task<ActionResult<IEnumerable<Site>>> GetAll()
+        {
+            var sites = await _db.Sites.ToListAsync();
+            return Ok(sites);
+        }
 
         [HttpGet("{id}")]
-        public ActionResult<Site> Get(int id)
+        public async Task<ActionResult<Site>> Get(int id)
         {
-            var site = Sites.FirstOrDefault(s => s.Id == id);
+            var site = await _db.Sites.FindAsync(id);
             return site is not null ? Ok(site) : NotFound();
         }
 
         [HttpPost]
-        public ActionResult<Site> Create([FromBody] SiteDto dto)
+        public async Task<ActionResult<Site>> Create([FromBody] SiteDto dto)
         {
-            var site = new Site { Id = _nextId++, Url = dto.Url, Name = dto.Name };
-            Sites.Add(site);
+            var site = new Site { Url = dto.Url, Name = dto.Name };
+            _db.Sites.Add(site);
+            await _db.SaveChangesAsync();
             return CreatedAtAction(nameof(Get), new { id = site.Id }, site);
         }
 
         [HttpPut("{id}")]
         public ActionResult<Site> Update(int id, [FromBody] SiteDto dto)
         {
-            var site = Sites.FirstOrDefault(s => s.Id == id);
+            var site = _db.Sites.FirstOrDefault(s => s.Id == id);
             if (site is null) return NotFound();
             site.Url = dto.Url;
             site.Name = dto.Name;
@@ -40,21 +50,14 @@ namespace SmartUptime.Api.Controllers
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            var site = Sites.FirstOrDefault(s => s.Id == id);
+            var site = _db.Sites.FirstOrDefault(s => s.Id == id);
             if (site is null) return NotFound();
-            Sites.Remove(site);
+            _db.Sites.Remove(site);
             return NoContent();
         }
     }
 
-    public record Site
-    {
-        public int Id { get; set; }
-        public string Url { get; set; } = string.Empty;
-        public string? Name { get; set; }
-    }
-
-    public record SiteDto
+    public class SiteDto
     {
         public string Url { get; set; } = string.Empty;
         public string? Name { get; set; }
