@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "qigLXYB/FcY=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\nivas\\OneDrive\\Documents\\GitHub\\Smart-Uptime-Monitoring-Dashboard-with-ML--Automation--and-DevOps\\SmartUptime.Api\\SmartUptime.Api.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\nivas\\.nuget\\packages\\microsoft.aspnetcore.openapi\\9.0.4\\microsoft.aspnetcore.openapi.9.0.4.nupkg.sha512",
+    "C:\\Users\\nivas\\.nuget\\packages\\microsoft.openapi\\1.6.17\\microsoft.openapi.1.6.17.nupkg.sha512"
+  ],
+  "logs": []
+}

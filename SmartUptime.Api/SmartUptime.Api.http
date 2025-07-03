@@ -1,0 +1,6 @@
+@SmartUptime.Api_HostAddress = http://localhost:5198
+
+GET {{SmartUptime.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
