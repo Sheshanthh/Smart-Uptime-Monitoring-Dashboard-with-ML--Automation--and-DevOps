@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using System;
 using System.Linq;
 using Microsoft.Extensions.Logging;
+using System.Text;
+using System.Text.Json;
 
 namespace SmartUptime.Api.Services
 {
@@ -51,8 +53,41 @@ namespace SmartUptime.Api.Services
                             watch.Stop();
                             pingResult.LatencyMs = (int)watch.ElapsedMilliseconds;
                             pingResult.StatusCode = (int)response.StatusCode;
-                            pingResult.IsAnomaly = false;
-                            _logger.LogInformation("Ping success: Site {SiteId} ({Url}) - Status: {StatusCode}, Latency: {Latency}ms", site.Id, site.Url, pingResult.StatusCode, pingResult.LatencyMs);
+
+                            // ML API call for anomaly detection
+                            try
+                            {
+                                var mlClient = _httpClientFactory.CreateClient();
+                                var mlApiUrl = "http://localhost:5000/predict"; // Update if needed
+                                var payload = new { latency_ms = pingResult.LatencyMs };
+                                var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+                                var mlResponse = await mlClient.PostAsync(mlApiUrl, content, stoppingToken);
+                                if (mlResponse.IsSuccessStatusCode)
+                                {
+                                    var mlJson = await mlResponse.Content.ReadAsStringAsync();
+                                    using var doc = JsonDocument.Parse(mlJson);
+                                    if (doc.RootElement.TryGetProperty("anomaly", out var anomalyProp))
+                                    {
+                                        pingResult.IsAnomaly = anomalyProp.GetInt32() == 1;
+                                    }
+                                    else
+                                    {
+                                        pingResult.IsAnomaly = false;
+                                    }
+                                }
+                                else
+                                {
+                                    _logger.LogWarning("ML API returned non-success status: {StatusCode}", mlResponse.StatusCode);
+                                    pingResult.IsAnomaly = false;
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "Failed to call ML API for anomaly detection");
+                                pingResult.IsAnomaly = false;
+                            }
+
+                            _logger.LogInformation("Ping success: Site {SiteId} ({Url}) - Status: {StatusCode}, Latency: {Latency}ms, Anomaly: {IsAnomaly}", site.Id, site.Url, pingResult.StatusCode, pingResult.LatencyMs, pingResult.IsAnomaly);
                         }
                         catch (TaskCanceledException ex) when (!stoppingToken.IsCancellationRequested)
                         {
