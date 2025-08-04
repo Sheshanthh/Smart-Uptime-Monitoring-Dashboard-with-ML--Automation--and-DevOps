@@ -17,18 +17,45 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
     {
-        policy.WithOrigins("http://localhost:3000")
+        policy.WithOrigins("http://localhost:3000", "https://smart-uptime-sheshanth-system.netlify.app")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
 });
 
-// Configure PostgreSQL DbContext
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Host=localhost;Database=smartuptime;Username=postgres;Password=postgres";
+// Configure Database
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=smartuptime.db";
+var isProduction = builder.Environment.IsProduction();
+
 builder.Services.AddDbContext<SmartUptimeDbContext>(options =>
-    options.UseNpgsql(connectionString));
+{
+    if (isProduction && connectionString.Contains("Host="))
+    {
+        // Use PostgreSQL in production
+        options.UseNpgsql(connectionString);
+    }
+    else
+    {
+        // Use SQLite for local development
+        options.UseSqlite(connectionString);
+    }
+});
 
 var app = builder.Build();
+
+// 1. Run migrations FIRST
+await using (var scope = app.Services.CreateAsyncScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<SmartUptimeDbContext>();
+    await db.Database.MigrateAsync();
+}
+
+// 2. Now initialize default scripts
+await using (var scope = app.Services.CreateAsyncScope())
+{
+    var scriptRunner = scope.ServiceProvider.GetRequiredService<SmartUptime.Api.Services.ScriptRunnerService>();
+    await scriptRunner.InitializeDefaultScriptsAsync();
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -37,15 +64,8 @@ if (app.Environment.IsDevelopment())
 }
 
 // Use CORS
-        app.UseCors("AllowReactApp");
+app.UseCors("AllowReactApp");
 
-        app.MapControllers();
+app.MapControllers();
 
-        // Initialize default emergency scripts
-        using (var scope = app.Services.CreateScope())
-        {
-            var scriptRunner = scope.ServiceProvider.GetRequiredService<SmartUptime.Api.Services.ScriptRunnerService>();
-            await scriptRunner.InitializeDefaultScriptsAsync();
-        }
-
-app.Run();
+await app.RunAsync();

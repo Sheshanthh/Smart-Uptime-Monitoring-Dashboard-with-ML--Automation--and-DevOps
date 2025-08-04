@@ -72,6 +72,12 @@ namespace SmartUptime.Api.Controllers
         {
             return Ok("Status controller is working!");
         }
+
+        [HttpGet("health")]
+        public ActionResult<string> Health()
+        {
+            return Ok("API is healthy!");
+        }
     }
 
     public record SiteStatus

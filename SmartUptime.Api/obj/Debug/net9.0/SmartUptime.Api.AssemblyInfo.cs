@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SmartUptime.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+28955da8e1c09c67f31ef9c7b7584753ebee51fe")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+10f6474785131a7e052249b1c7ad859fefea2cfd")]
 [assembly: System.Reflection.AssemblyProductAttribute("SmartUptime.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SmartUptime.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
