@@ -47,30 +47,51 @@ code {
 
 /* Card hover effects */
 .MuiCard-root {
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out !important;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out !important;
 }
 
 .MuiCard-root:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3) !important;
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4) !important;
 }
 
 /* Button hover effects */
 .MuiButton-root {
-  transition: all 0.2s ease-in-out !important;
+  transition: all 0.3s ease-in-out !important;
 }
 
 .MuiButton-root:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) !important;
 }
 
 /* FAB hover effect */
 .MuiFab-root {
-  transition: all 0.2s ease-in-out !important;
+  transition: all 0.3s ease-in-out !important;
 }
 
 .MuiFab-root:hover {
   transform: scale(1.1) !important;
-  box-shadow: 0 8px 25px rgba(0, 212, 255, 0.4) !important;
+  box-shadow: 0 12px 40px rgba(0, 184, 212, 0.5) !important;
+}
+
+/* Status indicator animations */
+.status-indicator {
+  transition: transform 0.3s ease-in-out !important;
+}
+
+/* Gradient text animation */
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #00b8d4 0%, #5ddef4 50%, #00b8d4 100%);
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }

@@ -37,30 +37,30 @@ const SiteList: React.FC<SiteListProps> = ({
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'up':
-        return <CheckCircleIcon sx={{ color: '#4caf50' }} />;
+        return <CheckCircleIcon sx={{ color: '#48bb78' }} />;
       case 'down':
-        return <ErrorIcon sx={{ color: '#f44336' }} />;
+        return <ErrorIcon sx={{ color: '#f56565' }} />;
       default:
-        return <HelpIcon sx={{ color: '#9e9e9e' }} />;
+        return <HelpIcon sx={{ color: '#a0aec0' }} />;
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'up':
-        return '#4caf50';
+        return '#48bb78';
       case 'down':
-        return '#f44336';
+        return '#f56565';
       default:
-        return '#9e9e9e';
+        return '#a0aec0';
     }
   };
 
   const getLatencyColor = (latency: number | null) => {
-    if (!latency) return '#9e9e9e';
-    if (latency < 200) return '#4caf50';
-    if (latency < 500) return '#ff9800';
-    return '#f44336';
+    if (!latency) return '#a0aec0';
+    if (latency < 200) return '#48bb78';
+    if (latency < 500) return '#ed8936';
+    return '#f56565';
   };
 
   if (sites.length === 0) {
@@ -84,19 +84,49 @@ const SiteList: React.FC<SiteListProps> = ({
           <ListItem
             key={site.id}
             sx={{
-              mb: 1,
-              borderRadius: 2,
-              background: 'rgba(255, 255, 255, 0.02)',
+              mb: 2,
+              borderRadius: 3,
+              background: 'linear-gradient(135deg, rgba(26, 31, 46, 0.8) 0%, rgba(45, 55, 72, 0.8) 100%)',
               border: '1px solid rgba(255, 255, 255, 0.1)',
-              transition: 'all 0.2s ease-in-out',
+              transition: 'all 0.3s ease-in-out',
+              position: 'relative',
+              overflow: 'hidden',
               '&:hover': {
-                background: 'rgba(255, 255, 255, 0.05)',
+                background: 'linear-gradient(135deg, rgba(26, 31, 46, 0.9) 0%, rgba(45, 55, 72, 0.9) 100%)',
                 transform: 'translateX(4px)',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+                '& .status-indicator': {
+                  transform: 'scale(1.1)',
+                },
+              },
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                bottom: 0,
+                width: '4px',
+                background: getStatusColor(status) === '#48bb78' ? 'linear-gradient(135deg, #48bb78 0%, #68d391 100%)' : 
+                           getStatusColor(status) === '#f56565' ? 'linear-gradient(135deg, #f56565 0%, #fc8181 100%)' :
+                           'linear-gradient(135deg, #a0aec0 0%, #cbd5e0 100%)',
               },
             }}
           >
-            <Box sx={{ mr: 2 }}>
-              {getStatusIcon(status)}
+            <Box sx={{ mr: 2 }} className="status-indicator">
+              <Box sx={{
+                width: 40,
+                height: 40,
+                borderRadius: '50%',
+                background: getStatusColor(status) === '#48bb78' ? 'linear-gradient(135deg, #48bb78 0%, #68d391 100%)' : 
+                           getStatusColor(status) === '#f56565' ? 'linear-gradient(135deg, #f56565 0%, #fc8181 100%)' :
+                           'linear-gradient(135deg, #a0aec0 0%, #cbd5e0 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'transform 0.3s ease-in-out',
+              }}>
+                {getStatusIcon(status)}
+              </Box>
             </Box>
             
             <ListItemText
@@ -105,11 +135,11 @@ const SiteList: React.FC<SiteListProps> = ({
                   <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
                     {site.name || site.url}
                   </Typography>
-                  {isAnomaly && (
-                    <Tooltip title="ML Anomaly Detected">
-                      <WarningIcon sx={{ color: '#ff9800', fontSize: 16 }} />
-                    </Tooltip>
-                  )}
+                                     {isAnomaly && (
+                     <Tooltip title="ML Anomaly Detected">
+                       <WarningIcon sx={{ color: '#ed8936', fontSize: 16 }} />
+                     </Tooltip>
+                   )}
                 </Box>
               }
               secondary={
@@ -144,15 +174,15 @@ const SiteList: React.FC<SiteListProps> = ({
             />
             
             <ListItemSecondaryAction>
-              <Tooltip title="Delete Site">
-                <IconButton
-                  edge="end"
-                  onClick={() => onDelete(site.id)}
-                  sx={{ color: '#f44336' }}
-                >
-                  <DeleteIcon />
-                </IconButton>
-              </Tooltip>
+                             <Tooltip title="Delete Site">
+                 <IconButton
+                   edge="end"
+                   onClick={() => onDelete(site.id)}
+                   sx={{ color: '#f56565' }}
+                 >
+                   <DeleteIcon />
+                 </IconButton>
+               </Tooltip>
             </ListItemSecondaryAction>
           </ListItem>
         );

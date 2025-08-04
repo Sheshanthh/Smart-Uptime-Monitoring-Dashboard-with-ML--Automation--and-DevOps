@@ -18,15 +18,12 @@ import {
   Chip,
   Alert,
   CircularProgress,
-  Paper,
 } from '@mui/material';
 import {
   Add as AddIcon,
   Close as CloseIcon,
-  CheckCircle as CheckCircleIcon,
-  Error as ErrorIcon,
-  Warning as WarningIcon,
   Refresh as RefreshIcon,
+  Speed as SpeedIcon,
 } from '@mui/icons-material';
 import SiteList from './SiteList';
 import LatencyChart from './LatencyChart';
@@ -113,18 +110,47 @@ const Dashboard: React.FC = () => {
 
   return (
     <Box>
-      <AppBar position="static" elevation={0} sx={{ background: 'rgba(26, 26, 26, 0.8)', backdropFilter: 'blur(10px)' }}>
-        <Toolbar>
-          <Typography variant="h4" component="h1" sx={{ flexGrow: 1, fontWeight: 700 }}>
-            Smart Uptime Monitor
-          </Typography>
-          <IconButton onClick={fetchData} color="inherit">
-            <RefreshIcon />
-          </IconButton>
+      <AppBar position="static" elevation={0}>
+        <Toolbar sx={{ px: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+            <Box sx={{ 
+              width: 40, 
+              height: 40, 
+              borderRadius: 2, 
+              background: 'linear-gradient(135deg, #00b8d4 0%, #5ddef4 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              mr: 2
+            }}>
+              <SpeedIcon sx={{ color: 'white', fontSize: 24 }} />
+            </Box>
+            <Typography variant="h4" component="h1" sx={{ fontWeight: 700, background: 'linear-gradient(135deg, #00b8d4 0%, #5ddef4 100%)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              Smart Uptime Monitor
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Chip 
+              label={`${sites.length} Sites`} 
+              color="primary" 
+              variant="outlined"
+              sx={{ borderColor: 'rgba(0, 184, 212, 0.3)' }}
+            />
+            <IconButton 
+              onClick={fetchData} 
+              color="inherit"
+              sx={{ 
+                background: 'rgba(255, 255, 255, 0.1)',
+                '&:hover': { background: 'rgba(255, 255, 255, 0.2)' }
+              }}
+            >
+              <RefreshIcon />
+            </IconButton>
+          </Box>
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
+      <Container maxWidth="xl" sx={{ mt: 4, mb: 4, px: 3 }}>
         {error && (
           <Alert severity="error" sx={{ mb: 3 }}>
             {error}
@@ -157,17 +183,19 @@ const Dashboard: React.FC = () => {
               </Card>
             </Box>
 
-            {/* Latency Chart */}
-            <Box sx={{ flex: '1 1 500px', minWidth: 0 }}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h5" gutterBottom>
-                    Latency Trends
-                  </Typography>
-                  <LatencyChart pingResults={pingResults} sites={sites} />
-                </CardContent>
-              </Card>
-            </Box>
+                         {/* Latency Chart */}
+             <Box sx={{ flex: '1 1 500px', minWidth: 0 }}>
+               <Card>
+                 <CardContent sx={{ p: 3 }}>
+                   <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
+                     Latency Trends
+                   </Typography>
+                   <Box sx={{ height: 500, width: '100%' }}>
+                     <LatencyChart pingResults={pingResults} sites={sites} />
+                   </Box>
+                 </CardContent>
+               </Card>
+             </Box>
           </Box>
         </Box>
       </Container>

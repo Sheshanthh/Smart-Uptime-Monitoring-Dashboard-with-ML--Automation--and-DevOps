@@ -8,9 +8,8 @@ import {
   Tooltip,
   ResponsiveContainer,
   Scatter,
-  ScatterChart,
 } from 'recharts';
-import { Box, Typography, useTheme } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { Site, PingResult } from '../types';
 
 interface LatencyChartProps {
@@ -19,7 +18,6 @@ interface LatencyChartProps {
 }
 
 const LatencyChart: React.FC<LatencyChartProps> = ({ pingResults, sites }) => {
-  const theme = useTheme();
 
   // Process data for the chart
   const chartData = pingResults
@@ -42,11 +40,12 @@ const LatencyChart: React.FC<LatencyChartProps> = ({ pingResults, sites }) => {
       return (
         <Box
           sx={{
-            background: 'rgba(26, 26, 26, 0.95)',
-            border: '1px solid #333',
-            borderRadius: 2,
-            p: 2,
-            boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+            background: 'linear-gradient(135deg, rgba(26, 31, 46, 0.95) 0%, rgba(45, 55, 72, 0.95) 100%)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: 3,
+            p: 3,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+            backdropFilter: 'blur(10px)',
           }}
         >
           <Typography variant="body2" sx={{ color: '#fff', mb: 1 }}>
@@ -83,38 +82,38 @@ const LatencyChart: React.FC<LatencyChartProps> = ({ pingResults, sites }) => {
   }
 
   return (
-    <Box sx={{ height: 400 }}>
+    <Box sx={{ width: '100%', height: '100%' }}>
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                 <LineChart data={chartData} margin={{ top: 20, right: 30, left: 40, bottom: 20 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.1)" />
           <XAxis
             dataKey="timestamp"
-            stroke="#b0b0b0"
+            stroke="#a0aec0"
             fontSize={12}
-            tick={{ fill: '#b0b0b0' }}
+            tick={{ fill: '#a0aec0' }}
           />
-          <YAxis
-            stroke="#b0b0b0"
-            fontSize={12}
-            tick={{ fill: '#b0b0b0' }}
-            label={{ value: 'Latency (ms)', angle: -90, position: 'insideLeft', fill: '#b0b0b0' }}
-          />
+                     <YAxis
+             stroke="#a0aec0"
+             fontSize={12}
+             tick={{ fill: '#a0aec0' }}
+             label={{ value: 'Latency (ms)', angle: -90, position: 'insideLeft', fill: '#a0aec0', fontSize: 12 }}
+           />
           <Tooltip content={<CustomTooltip />} />
           
           {/* Main latency line */}
           <Line
             type="monotone"
             dataKey="latency"
-            stroke="#00d4ff"
+            stroke="#00b8d4"
             strokeWidth={3}
-            dot={{ fill: '#00d4ff', strokeWidth: 2, r: 4 }}
-            activeDot={{ r: 6, stroke: '#00d4ff', strokeWidth: 2 }}
+            dot={{ fill: '#00b8d4', strokeWidth: 2, r: 4 }}
+            activeDot={{ r: 6, stroke: '#00b8d4', strokeWidth: 2 }}
           />
           
           {/* Anomaly points */}
           <Scatter
             data={chartData.filter(d => d.isAnomaly)}
-            fill="#ff6b6b"
+            fill="#ed8936"
             shape="circle"
             dataKey="latency"
             name="Anomaly"
@@ -122,35 +121,42 @@ const LatencyChart: React.FC<LatencyChartProps> = ({ pingResults, sites }) => {
         </LineChart>
       </ResponsiveContainer>
       
-      {/* Legend */}
-      <Box display="flex" justifyContent="center" gap={3} mt={2}>
-        <Box display="flex" alignItems="center" gap={1}>
-          <Box
-            sx={{
-              width: 12,
-              height: 12,
-              backgroundColor: '#00d4ff',
-              borderRadius: '50%',
-            }}
-          />
-          <Typography variant="body2" color="text.secondary">
-            Latency
-          </Typography>
-        </Box>
-        <Box display="flex" alignItems="center" gap={1}>
-          <Box
-            sx={{
-              width: 12,
-              height: 12,
-              backgroundColor: '#ff6b6b',
-              borderRadius: '50%',
-            }}
-          />
-          <Typography variant="body2" color="text.secondary">
-            ML Anomaly
-          </Typography>
-        </Box>
-      </Box>
+             {/* Legend */}
+       <Box display="flex" justifyContent="center" gap={4} mt={3} sx={{ 
+         background: 'rgba(255, 255, 255, 0.05)', 
+         borderRadius: 2, 
+         p: 2,
+         border: '1px solid rgba(255, 255, 255, 0.1)'
+       }}>
+         <Box display="flex" alignItems="center" gap={2}>
+           <Box
+             sx={{
+               width: 16,
+               height: 16,
+               background: 'linear-gradient(135deg, #00b8d4 0%, #5ddef4 100%)',
+               borderRadius: '50%',
+               boxShadow: '0 2px 4px rgba(0, 184, 212, 0.3)',
+             }}
+           />
+           <Typography variant="body1" color="text.primary" sx={{ fontWeight: 600, fontSize: '0.9rem' }}>
+             Latency
+           </Typography>
+         </Box>
+         <Box display="flex" alignItems="center" gap={2}>
+           <Box
+             sx={{
+               width: 16,
+               height: 16,
+               background: 'linear-gradient(135deg, #ed8936 0%, #f6ad55 100%)',
+               borderRadius: '50%',
+               boxShadow: '0 2px 4px rgba(237, 137, 54, 0.3)',
+             }}
+           />
+           <Typography variant="body1" color="text.primary" sx={{ fontWeight: 600, fontSize: '0.9rem' }}>
+             ML Anomaly
+           </Typography>
+         </Box>
+       </Box>
     </Box>
   );
 };

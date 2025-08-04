@@ -12,11 +12,23 @@ namespace SmartUptime.Api
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Site>()
-                .HasMany(s => s.PingResults)
-                .WithOne(p => p.Site)
-                .HasForeignKey(p => p.SiteId)
-                .OnDelete(DeleteBehavior.Cascade);
+                    modelBuilder.Entity<Site>()
+            .HasMany(s => s.PingResults)
+            .WithOne(p => p.Site)
+            .HasForeignKey(p => p.SiteId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ScriptExecution>()
+            .HasOne(se => se.Site)
+            .WithMany()
+            .HasForeignKey(se => se.SiteId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<ScriptExecution>()
+            .HasOne(se => se.PingResult)
+            .WithMany()
+            .HasForeignKey(se => se.PingResultId)
+            .OnDelete(DeleteBehavior.SetNull);
         }
     }
 } 
