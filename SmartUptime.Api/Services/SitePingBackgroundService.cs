@@ -33,6 +33,7 @@ namespace SmartUptime.Api.Services
                 using (var scope = _serviceProvider.CreateScope())
                 {
                     var db = scope.ServiceProvider.GetRequiredService<SmartUptimeDbContext>();
+                    var scriptRunner = scope.ServiceProvider.GetRequiredService<ScriptRunnerService>();
                     var sites = db.Sites.Where(s => s.IsActive).ToList();
                     var httpClient = _httpClientFactory.CreateClient();
 
@@ -126,6 +127,9 @@ namespace SmartUptime.Api.Services
                             _logger.LogError(ex, "Ping failed for site {SiteId} ({Url})", site.Id, site.Url);
                         }
                         db.PingResults.Add(pingResult);
+                        
+                        // Trigger emergency scripts if conditions are met
+                        await TriggerEmergencyScriptsAsync(scriptRunner, site, pingResult, stoppingToken);
                     }
                     await db.SaveChangesAsync(stoppingToken);
                     _logger.LogInformation("Saved ping results for {Count} sites at {Time}", sites.Count, DateTime.UtcNow);
@@ -142,6 +146,62 @@ namespace SmartUptime.Api.Services
                     }
                 }
                 await Task.Delay(TimeSpan.FromSeconds(PingIntervalSeconds), stoppingToken);
+            }
+        }
+
+        private async Task TriggerEmergencyScriptsAsync(ScriptRunnerService scriptRunner, Site site, PingResult pingResult, CancellationToken stoppingToken)
+        {
+            try
+            {
+                var activeScripts = await scriptRunner.GetActiveScriptsAsync();
+                
+                foreach (var script in activeScripts)
+                {
+                    // Determine trigger type
+                    string triggerType = "normal";
+                    if (pingResult.IsAnomaly)
+                    {
+                        triggerType = "anomaly";
+                    }
+                    else if (pingResult.StatusCode < 200 || pingResult.StatusCode >= 300)
+                    {
+                        triggerType = "downtime";
+                    }
+
+                    // Check if script should be triggered
+                    if (await scriptRunner.ShouldTriggerScriptAsync(script, triggerType, site.Id))
+                    {
+                        _logger.LogInformation("Triggering emergency script {ScriptName} for site {SiteId} due to {TriggerType}", 
+                            script.Name, site.Id, triggerType);
+
+                        // Execute the script asynchronously to avoid blocking the ping process
+                        _ = Task.Run(async () =>
+                        {
+                            try
+                            {
+                                var success = await scriptRunner.ExecuteEmergencyScriptAsync(
+                                    script, 
+                                    triggerType, 
+                                    site.Id, 
+                                    pingResult.Id, 
+                                    script.DefaultArguments,
+                                    stoppingToken
+                                );
+
+                                _logger.LogInformation("Emergency script {ScriptName} execution completed with success: {Success}", 
+                                    script.Name, success);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "Error executing emergency script {ScriptName}", script.Name);
+                            }
+                        }, stoppingToken);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in emergency script triggering for site {SiteId}", site.Id);
             }
         }
     }

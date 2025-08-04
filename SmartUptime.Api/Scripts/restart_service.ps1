@@ -31,6 +31,7 @@ try {
     Write-Log "Service $ServiceName found"
 } catch {
     Write-Log "ERROR: Service $ServiceName not found"
+    Write-Log "Available services: $(Get-Service | Select-Object -First 5 Name | ForEach-Object { $_.Name })"
     exit 1
 }
 

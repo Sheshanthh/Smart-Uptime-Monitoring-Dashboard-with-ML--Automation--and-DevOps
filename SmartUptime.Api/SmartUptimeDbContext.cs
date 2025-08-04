@@ -9,6 +9,8 @@ namespace SmartUptime.Api
 
         public DbSet<Site> Sites => Set<Site>();
         public DbSet<PingResult> PingResults => Set<PingResult>();
+        public DbSet<ScriptExecution> ScriptExecutions => Set<ScriptExecution>();
+        public DbSet<EmergencyScript> EmergencyScripts => Set<EmergencyScript>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -8,8 +8,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
-builder.Services.AddHttpClient();
-builder.Services.AddHostedService<SmartUptime.Api.Services.SitePingBackgroundService>();
+        builder.Services.AddHttpClient();
+        builder.Services.AddHostedService<SmartUptime.Api.Services.SitePingBackgroundService>();
+        builder.Services.AddScoped<SmartUptime.Api.Services.ScriptRunnerService>();
 
 // Add CORS
 builder.Services.AddCors(options =>
@@ -36,8 +37,15 @@ if (app.Environment.IsDevelopment())
 }
 
 // Use CORS
-app.UseCors("AllowReactApp");
+        app.UseCors("AllowReactApp");
 
-app.MapControllers();
+        app.MapControllers();
+
+        // Initialize default emergency scripts
+        using (var scope = app.Services.CreateScope())
+        {
+            var scriptRunner = scope.ServiceProvider.GetRequiredService<SmartUptime.Api.Services.ScriptRunnerService>();
+            await scriptRunner.InitializeDefaultScriptsAsync();
+        }
 
 app.Run();

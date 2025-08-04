@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SmartUptime.Api;
@@ -11,9 +12,11 @@ using SmartUptime.Api;
 namespace SmartUptime.Api.Migrations
 {
     [DbContext(typeof(SmartUptimeDbContext))]
-    partial class SmartUptimeDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250804111310_AddScriptRunnerTables")]
+    partial class AddScriptRunnerTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
