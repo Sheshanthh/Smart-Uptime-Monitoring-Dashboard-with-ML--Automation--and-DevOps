@@ -11,6 +11,17 @@ builder.Services.AddControllers();
 builder.Services.AddHttpClient();
 builder.Services.AddHostedService<SmartUptime.Api.Services.SitePingBackgroundService>();
 
+// Add CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 // Configure PostgreSQL DbContext
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Host=localhost;Database=smartuptime;Username=postgres;Password=postgres";
 builder.Services.AddDbContext<SmartUptimeDbContext>(options =>
@@ -23,6 +34,9 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+// Use CORS
+app.UseCors("AllowReactApp");
 
 app.MapControllers();
 

@@ -40,24 +40,37 @@ namespace SmartUptime.Api.Controllers
             public string? ErrorMessage { get; set; }
         }
 
-        [HttpGet("/pingresults/recent")]
+        [HttpGet("pingresults/recent")]
         public async Task<ActionResult<IEnumerable<PingResultDto>>> GetRecentPingResults([FromServices] SmartUptimeDbContext db, int count = 100)
         {
-            var results = await db.PingResults
-                .OrderByDescending(p => p.Timestamp)
-                .Take(count)
-                .Select(p => new PingResultDto
-                {
-                    Id = p.Id,
-                    SiteId = p.SiteId,
-                    Timestamp = p.Timestamp,
-                    LatencyMs = p.LatencyMs,
-                    StatusCode = p.StatusCode,
-                    IsAnomaly = p.IsAnomaly,
-                    ErrorMessage = p.ErrorMessage
-                })
-                .ToListAsync();
-            return Ok(results);
+            try
+            {
+                var results = await db.PingResults
+                    .OrderByDescending(p => p.Timestamp)
+                    .Take(count)
+                    .Select(p => new PingResultDto
+                    {
+                        Id = p.Id,
+                        SiteId = p.SiteId,
+                        Timestamp = p.Timestamp,
+                        LatencyMs = p.LatencyMs,
+                        StatusCode = p.StatusCode,
+                        IsAnomaly = p.IsAnomaly,
+                        ErrorMessage = p.ErrorMessage
+                    })
+                    .ToListAsync();
+                return Ok(results);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        [HttpGet("test")]
+        public ActionResult<string> Test()
+        {
+            return Ok("Status controller is working!");
         }
     }
 

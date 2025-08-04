@@ -48,12 +48,107 @@ namespace SmartUptime.Api.Controllers
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var site = _db.Sites.FirstOrDefault(s => s.Id == id);
-            if (site is null) return NotFound();
-            _db.Sites.Remove(site);
-            return NoContent();
+            try
+            {
+                Console.WriteLine($"Delete request received for site ID: {id}");
+                
+                var site = await _db.Sites.FindAsync(id);
+                if (site is null)
+                {
+                    Console.WriteLine($"Site with ID {id} not found");
+                    return NotFound();
+                }
+                
+                Console.WriteLine($"Found site: {site.Name} ({site.Url})");
+                
+                // Also delete associated ping results
+                var pingResults = await _db.PingResults.Where(p => p.SiteId == id).ToListAsync();
+                Console.WriteLine($"Deleting {pingResults.Count} ping results for site {id}");
+                _db.PingResults.RemoveRange(pingResults);
+                
+                _db.Sites.Remove(site);
+                
+                Console.WriteLine("About to save changes to database...");
+                var result = await _db.SaveChangesAsync();
+                Console.WriteLine($"SaveChangesAsync returned: {result} rows affected");
+                
+                // Verify deletion
+                var verifySite = await _db.Sites.FindAsync(id);
+                if (verifySite == null)
+                {
+                    Console.WriteLine($"✅ Site {id} successfully deleted from database");
+                }
+                else
+                {
+                    Console.WriteLine($"❌ Site {id} still exists in database after deletion!");
+                }
+                
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error deleting site {id}: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        [HttpGet("test-delete/{id}")]
+        public async Task<IActionResult> TestDelete(int id)
+        {
+            var site = await _db.Sites.FindAsync(id);
+            if (site is null)
+            {
+                return NotFound(new { message = $"Site with ID {id} not found" });
+            }
+            
+            return Ok(new { 
+                message = $"Site found: {site.Name} ({site.Url})", 
+                id = site.Id,
+                canDelete = true 
+            });
+        }
+
+        [HttpGet("debug/all")]
+        public async Task<IActionResult> DebugAllSites()
+        {
+            var sites = await _db.Sites.ToListAsync();
+            var pingResults = await _db.PingResults.ToListAsync();
+            
+            return Ok(new { 
+                sites = sites.Select(s => new { s.Id, s.Name, s.Url, s.IsActive }),
+                pingResultsCount = pingResults.Count,
+                totalSites = sites.Count
+            });
+        }
+
+        [HttpGet("test-ping/{url}")]
+        public async Task<IActionResult> TestPing(string url)
+        {
+            try
+            {
+                using var httpClient = new HttpClient();
+                httpClient.Timeout = TimeSpan.FromSeconds(10);
+                httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
+                
+                var watch = System.Diagnostics.Stopwatch.StartNew();
+                var response = await httpClient.GetAsync(url);
+                watch.Stop();
+                
+                return Ok(new {
+                    url = url,
+                    statusCode = (int)response.StatusCode,
+                    latencyMs = watch.ElapsedMilliseconds,
+                    isSuccess = response.IsSuccessStatusCode,
+                    headers = response.Headers.ToDictionary(h => h.Key, h => h.Value.ToArray())
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
     }
 

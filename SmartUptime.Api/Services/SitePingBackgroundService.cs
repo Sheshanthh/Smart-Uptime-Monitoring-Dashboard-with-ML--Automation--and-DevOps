@@ -49,10 +49,19 @@ namespace SmartUptime.Api.Services
                         {
                             var httpClientTimeout = _httpClientFactory.CreateClient();
                             httpClientTimeout.Timeout = TimeSpan.FromSeconds(10); // 10s timeout
+                            
+                            // Add User-Agent to avoid bot detection
+                            httpClientTimeout.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
+                            
                             var response = await httpClientTimeout.GetAsync(site.Url, stoppingToken);
                             watch.Stop();
                             pingResult.LatencyMs = (int)watch.ElapsedMilliseconds;
                             pingResult.StatusCode = (int)response.StatusCode;
+                            
+                            // Log detailed response info for debugging
+                            _logger.LogInformation("Site {SiteId} ({Url}) - Status: {StatusCode}, Latency: {Latency}ms, Headers: {Headers}", 
+                                site.Id, site.Url, pingResult.StatusCode, pingResult.LatencyMs, 
+                                string.Join(", ", response.Headers.Select(h => $"{h.Key}={string.Join(",", h.Value)}")));
 
                             // ML API call for anomaly detection
                             try
@@ -120,6 +129,17 @@ namespace SmartUptime.Api.Services
                     }
                     await db.SaveChangesAsync(stoppingToken);
                     _logger.LogInformation("Saved ping results for {Count} sites at {Time}", sites.Count, DateTime.UtcNow);
+
+                    // Clean up old ping results (keep last 7 days)
+                    var cutoffDate = DateTime.UtcNow.AddDays(-7);
+                    var oldResults = db.PingResults.Where(p => p.Timestamp < cutoffDate);
+                    var deletedCount = oldResults.Count();
+                    if (deletedCount > 0)
+                    {
+                        db.PingResults.RemoveRange(oldResults);
+                        await db.SaveChangesAsync(stoppingToken);
+                        _logger.LogInformation("Cleaned up {Count} old ping results older than 7 days", deletedCount);
+                    }
                 }
                 await Task.Delay(TimeSpan.FromSeconds(PingIntervalSeconds), stoppingToken);
             }
